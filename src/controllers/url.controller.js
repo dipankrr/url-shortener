@@ -1,5 +1,7 @@
 import { nanoid } from 'nanoid'
 import { URL } from '../models/url.model.js';
+import { ApiResponse } from "../utils/ApiResponse.js"
+import { ApiError } from "../utils/ApiError.js"
 
 
 const genShortUrl = async (req, res) => {
@@ -7,7 +9,7 @@ const genShortUrl = async (req, res) => {
     const {redirectURL} = req.body
 
     if (!redirectURL){
-        throw console.error("URL is must");    
+        throw new ApiError(400, "url can not be empty");    
     }
 
     const shortId = nanoid(7)
@@ -18,14 +20,12 @@ const genShortUrl = async (req, res) => {
     })
 
     if (!urlDB) {
-        throw console.error("Error while inserting URL data  in DB");
+        throw new ApiError(500, "Error while inserting URL data  in DB")
         
     }
 
     return res.status(201).json(
-        {
-            'message': shortId
-        }
+        new ApiResponse(200, "short url generated successfully", shortId)
     )
 }
 
@@ -40,7 +40,7 @@ const redirectUrlController = async (req, res) => {
     })
 
     if (!urlDoc) {
-        throw console.error("Short url does not exist"); 
+        throw new ApiError(404, "this short url does not exist")
     }
 
     const realUrl = urlDoc.redirectURL;
